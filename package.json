@@ -1,0 +1,14 @@
+{
+    "name": "emailer",
+    "version": "0.0.1",
+    "description": "API to send emails using different email service providers.",
+    "main": "index.js",
+    "script": {
+        "test-dev": "mocha --exit --recursive --check-leaks --use_strict tests",
+        "test": "nyc --reporter=text --reporter=clover npm run test-dev",
+        "watch": "mocha --watch --recursive --reporter min tests/"
+    },
+    "devDependencies": {
+        "nodemon": "^1.19.1"
+    }
+}
