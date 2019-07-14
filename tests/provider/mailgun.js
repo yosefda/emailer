@@ -21,14 +21,19 @@ describe('Test mailgun service', () => {
             post: () => {},
         };
 
-        expect(() => mailgun.createRequest({}, client)).to.throw('Invalid email parameter');
+        const mailgunProvider = mailgun.create();
+
+        expect(() => mailgunProvider.createRequest({}, client)).to.throw('Invalid email parameter');
     });
 
     it('throws error when given invalid httpClient param', () => {
         const email = {
             getFrom: () => {},
         };
-        expect(() => mailgun.createRequest(email, {})).to.throw('Invalid httpClient parameter');
+
+        const mailgunProvider = mailgun.create();
+
+        expect(() => mailgunProvider.createRequest(email, {})).to.throw('Invalid httpClient parameter');
     });
 
     it('returns valid request to SendGrid', () => {
@@ -57,7 +62,9 @@ describe('Test mailgun service', () => {
         const expectedPayload =
             'from=bob%40example.com&to=sam%40example.com%2Cjane%40example.com&subject=Test%20email&text=Hi%20there%20guys!';
 
-        const req = mailgun.createRequest(emailInfo, httpClient);
+        const mailgunProvider = mailgun.create();
+
+        const req = mailgunProvider.createRequest(emailInfo, httpClient);
         expect(req.url).to.equal(process.env.MAILGUN_SEND_ENDPOINT);
         expect(req.payload).to.deep.equal(expectedPayload);
         expect(req.options).to.deep.equal({ auth: { username: 'api', password: 'some-api-key' } });
