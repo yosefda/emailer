@@ -17,7 +17,7 @@ describe('Test mailgun service', () => {
 
     it('creates HTTP client', () => {
         http.__set__('DEFAULT_TIMEOUT', 12345);
-        const client = http.createClient();
+        const client = http.create();
         expect(client.defaults.timeout).to.equal(12345);
     });
 });

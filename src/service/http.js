@@ -8,7 +8,7 @@ const DEFAULT_TIMEOUT = 3000;
  * Wrapper to create HTTP client.
  * @return {Object} HTTP client
  */
-module.exports.createClient = () => {
+module.exports.create = () => {
     const client = axios.create();
     client.defaults.timeout = DEFAULT_TIMEOUT;
 
