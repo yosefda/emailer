@@ -32,7 +32,7 @@ describe('Test mailgun service', () => {
     });
 
     it('returns valid request to SendGrid', () => {
-        const emailInfo = email.createEmail({
+        const emailInfo = email.create({
             from: 'bob@example.com',
             to: 'sam@example.com, jane@example.com',
             cc: 'joe@example.com',

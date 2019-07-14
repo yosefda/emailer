@@ -5,33 +5,33 @@ const email = require('../src/email');
 
 describe('Test create email object', () => {
     it('throws error when missing From', () => {
-        expect(() => email.createEmail({})).to.throw('Missing From');
-        expect(() => email.createEmail({ from: '' })).to.throw('Missing From');
+        expect(() => email.create({})).to.throw('Missing From');
+        expect(() => email.create({ from: '' })).to.throw('Missing From');
     });
 
     it('throws error when missing To', () => {
-        expect(() => email.createEmail({ from: 'bob@example.com' })).to.throw('Missing To');
-        expect(() => email.createEmail({ from: 'bob@example.com', to: '' })).to.throw('Missing To');
+        expect(() => email.create({ from: 'bob@example.com' })).to.throw('Missing To');
+        expect(() => email.create({ from: 'bob@example.com', to: '' })).to.throw('Missing To');
     });
 
     it('throws error when From contains invalid email', () => {
-        expect(() => email.createEmail({ from: 'bob@example', to: 'sam@example.com' })).to.throw(
+        expect(() => email.create({ from: 'bob@example', to: 'sam@example.com' })).to.throw(
             'Invalid email bob@example'
         );
     });
 
     it('throws error when To contains invalid email', () => {
-        expect(() => email.createEmail({ from: 'bob@example.com', to: 'sam@example.com, jane@example' })).to.throw(
+        expect(() => email.create({ from: 'bob@example.com', to: 'sam@example.com, jane@example' })).to.throw(
             'Invalid email jane@example'
         );
-        expect(() => email.createEmail({ from: 'bob@example.com', to: 'sam@example.com, jane@example, ' })).to.throw(
+        expect(() => email.create({ from: 'bob@example.com', to: 'sam@example.com, jane@example, ' })).to.throw(
             'Invalid email '
         );
     });
 
     it('throws error when CC contains invalid email', () => {
         expect(() =>
-            email.createEmail({
+            email.create({
                 from: 'bob@example.com',
                 to: 'sam@example.com, jane@example.com',
                 cc: 'joe@example',
@@ -41,7 +41,7 @@ describe('Test create email object', () => {
 
     it('throws error when BCC contains invalid email', () => {
         expect(() =>
-            email.createEmail({
+            email.create({
                 from: 'bob@example.com',
                 to: 'sam@example.com, jane@example.com',
                 cc: 'joe@example.com',
@@ -52,7 +52,7 @@ describe('Test create email object', () => {
 
     it('throws error when Subject is not string type', () => {
         expect(() =>
-            email.createEmail({
+            email.create({
                 from: 'bob@example.com',
                 to: 'sam@example.com, jane@example.com',
                 cc: 'joe@example.com',
@@ -64,7 +64,7 @@ describe('Test create email object', () => {
 
     it('throws error when Body is not string type', () => {
         expect(() =>
-            email.createEmail({
+            email.create({
                 from: 'bob@example.com',
                 to: 'sam@example.com, jane@example.com',
                 cc: 'joe@example.com',
@@ -76,7 +76,7 @@ describe('Test create email object', () => {
     });
 
     it('returns email', () => {
-        const emailInfo = email.createEmail({
+        const emailInfo = email.create({
             from: 'bob@example.com',
             to: 'sam@example.com, jane@example.com',
             cc: 'joe@example.com',
@@ -94,7 +94,7 @@ describe('Test create email object', () => {
     });
 
     it('returns email', () => {
-        const emailInfo = email.createEmail({
+        const emailInfo = email.create({
             from: 'bob@example.com',
             to: 'sam@example.com, jane@example.com',
             cc: 'joe@example.com',

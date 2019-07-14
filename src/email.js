@@ -9,7 +9,7 @@ module.exports = {
      * @param {Object} payload JSON string contains email
      * @return {Object} Email object
      */
-    createEmail: payload => {
+    create: payload => {
         const properties = {
             from: '',
             to: [],
