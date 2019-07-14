@@ -28,6 +28,7 @@
         }
     },
     "nyc": {
-        "report-dir": "__output"
+        "report-dir": "__output",
+        "exclude": "tests/*"
     }
 }
