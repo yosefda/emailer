@@ -20,14 +20,20 @@ describe('Test SendGrid service', () => {
         const client = {
             post: () => {},
         };
-        expect(() => sendgrid.createRequest({}, client)).to.throw('Invalid email parameter');
+
+        const sendgridProvider = sendgrid.create();
+
+        expect(() => sendgridProvider.createRequest({}, client)).to.throw('Invalid email parameter');
     });
 
     it('throws error when given invalid httpClient param', () => {
         const email = {
             getFrom: () => {},
         };
-        expect(() => sendgrid.createRequest(email, {})).to.throw('Invalid httpClient parameter');
+
+        const sendgridProvider = sendgrid.create();
+
+        expect(() => sendgridProvider.createRequest(email, {})).to.throw('Invalid httpClient parameter');
     });
 
     it('returns valid request to SendGrid', () => {
@@ -85,7 +91,8 @@ describe('Test SendGrid service', () => {
             ],
         };
 
-        const req = sendgrid.createRequest(emailInfo, httpClient);
+        const sendgridProvider = sendgrid.create();
+        const req = sendgridProvider.createRequest(emailInfo, httpClient);
 
         expect(req.url).to.equal(process.env.SENDGRID_SEND_ENDPOINT);
         expect(req.payload).to.deep.equal(expectedPayload);
