@@ -5,6 +5,7 @@ const _ = require('lodash');
 const SEND_ENDPOINT =
     process.env.MAILGUN_SEND_ENDPOINT ||
     'https://api.mailgun.net/v3/sandbox967dadd36b2e45e2a119f086046556b3.mailgun.org/messages';
+const API_USER = process.env.MAILGUN_API_USER || 'api';
 
 /**
  * Create request to MailGun.
@@ -23,8 +24,13 @@ module.exports.createRequest = (email, httpClient) => {
     }
 
     const payload = createPayload(email);
-
-    return httpClient.post(SEND_ENDPOINT, payload);
+    const options = {
+        auth: {
+            username: API_USER,
+            password: process.env.MAILGUN_API_KEY,
+        },
+    };
+    return httpClient.post(SEND_ENDPOINT, payload, options);
 };
 
 /**

@@ -21,8 +21,13 @@ module.exports.createRequest = (email, httpClient) => {
     }
 
     const payload = createPayload(email);
+    const options = {
+        headers: {
+            Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+        },
+    };
 
-    return httpClient.post(SEND_ENDPOINT, payload);
+    return httpClient.post(SEND_ENDPOINT, payload, options);
 };
 
 /**

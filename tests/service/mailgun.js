@@ -5,6 +5,17 @@ const email = require('../../src/email');
 const mailgun = require('../../src/service/mailgun');
 
 describe('Test mailgun service', () => {
+    let apiKey;
+
+    before(() => {
+        apiKey = process.env.MAILGUN_API_KEY;
+        process.env.MAILGUN_API_KEY = 'some-api-key';
+    });
+
+    after(() => {
+        process.env.MAILGUN_API_KEY = apiKey;
+    });
+
     it('throws error when given invalid email param', () => {
         const client = {
             post: () => {},
@@ -33,9 +44,11 @@ describe('Test mailgun service', () => {
         const httpClient = {
             url: '',
             payload: '',
-            post: (url, payload) => {
+            options: {},
+            post: (url, payload, options) => {
                 this.url = url;
                 this.payload = payload;
+                this.options = options;
 
                 return this;
             },
@@ -47,5 +60,6 @@ describe('Test mailgun service', () => {
         const req = mailgun.createRequest(emailInfo, httpClient);
         expect(req.url).to.equal(process.env.MAILGUN_SEND_ENDPOINT);
         expect(req.payload).to.deep.equal(expectedPayload);
+        expect(req.options).to.deep.equal({ auth: { username: 'api', password: 'some-api-key' } });
     });
 });
