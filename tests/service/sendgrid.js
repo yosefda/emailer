@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const email = require('../../src/email');
 const sendgrid = require('../../src/service/sendgrid');
 
-describe('Test sendgrid service', () => {
+describe('Test SendGrid service', () => {
     it('throws error when given invalid email param', () => {
         const client = {
             post: () => {},
