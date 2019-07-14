@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const email = require('../../src/email');
-const sendgrid = require('../../src/service/sendgrid');
+const sendgrid = require('../../src/provider/sendgrid');
 
 describe('Test SendGrid service', () => {
     let apiKey;

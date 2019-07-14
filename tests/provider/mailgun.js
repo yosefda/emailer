@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const email = require('../../src/email');
-const mailgun = require('../../src/service/mailgun');
+const mailgun = require('../../src/provider/mailgun');
 
 describe('Test mailgun service', () => {
     let apiKey;
