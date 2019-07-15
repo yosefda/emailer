@@ -62,17 +62,12 @@ module.exports = {
             /**
              * Create request to SendGrid.
              * @param {Object} email Email object
-             * @param {Object} httpClient Any Http client that supports promise
              * @return {Promise} Request to SendGrid
              * @throws {Error}
              */
-            createRequest: (email, httpClient) => {
+            send: email => {
                 if (_.isEmpty(email)) {
                     throw new Error('Invalid email parameter');
-                }
-
-                if (_.isEmpty(httpClient)) {
-                    throw new Error('Invalid httpClient parameter');
                 }
 
                 const payload = createPayload(email);
