@@ -10,9 +10,14 @@ const API_USER = process.env.MAILGUN_API_USER || 'api';
 module.exports = {
     /**
      * Create MailGun provider instance.
+     * @param {Object} HTTP client used to send request
      * @return {Object}
      */
-    create: () => {
+    create: httpClient => {
+        if (_.isEmpty(httpClient)) {
+            throw new Error('Invalid httpClient parameter');
+        }
+
         /**
          * Create payload.
          * @param {Object} Email object
@@ -32,19 +37,14 @@ module.exports = {
 
         const mailgun = {
             /**
-             * Create request to MailGun.
+             * Send request to MailGun.
              * @param {Object} email Email object
-             * @param {Object} httpClient Any Http client that supports promise
              * @return {Promise} Request to MailGun
              * @throws {Error}
              */
-            createRequest: (email, httpClient) => {
+            send: email => {
                 if (_.isEmpty(email)) {
                     throw new Error('Invalid email parameter');
-                }
-
-                if (_.isEmpty(httpClient)) {
-                    throw new Error('Invalid httpClient parameter');
                 }
 
                 const payload = createPayload(email);
