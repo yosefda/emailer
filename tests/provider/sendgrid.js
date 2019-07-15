@@ -31,13 +31,13 @@ describe('Test SendGrid service', () => {
     });
 
     it('throws error when create() without http client', () => {
-        expect(() => sendgrid.create()).to.throw('Invalid httpClient parameter');
+        expect(() => sendgrid.create()).to.throw('Missing httpClient');
     });
 
     it('throws error when given send() without email', () => {
         const sendgridProvider = sendgrid.create(httpClient);
 
-        expect(() => sendgridProvider.send({})).to.throw('Invalid email parameter');
+        expect(() => sendgridProvider.send({})).to.throw('Missing email');
     });
 
     it('returns valid request to SendGrid', () => {

@@ -12,7 +12,7 @@ module.exports = {
      */
     create: httpClient => {
         if (_.isEmpty(httpClient)) {
-            throw new Error('Invalid httpClient parameter');
+            throw new Error('Missing httpClient');
         }
 
         /**
@@ -67,7 +67,7 @@ module.exports = {
              */
             send: email => {
                 if (_.isEmpty(email)) {
-                    throw new Error('Invalid email parameter');
+                    throw new Error('Missing email');
                 }
 
                 const payload = createPayload(email);

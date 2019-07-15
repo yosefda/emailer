@@ -31,13 +31,13 @@ describe('Test mailgun service', () => {
     });
 
     it('throws error when create() without http client', () => {
-        expect(() => mailgun.create()).to.throw('Invalid httpClient parameter');
+        expect(() => mailgun.create()).to.throw('Missing httpClient');
     });
 
     it('throws error when given send() without email', () => {
         const mailgunProvider = mailgun.create(httpClient);
 
-        expect(() => mailgunProvider.send({})).to.throw('Invalid email parameter');
+        expect(() => mailgunProvider.send({})).to.throw('Missing email');
     });
 
     it('returns valid request to MailGun', () => {
