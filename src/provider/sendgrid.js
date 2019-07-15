@@ -7,9 +7,14 @@ const SEND_ENDPOINT = process.env.SENDGRID_SEND_ENDPOINT || 'https://api.sendgri
 module.exports = {
     /**
      * Create SendGrid provider instance.
+     * @param {Object} HTTP client used to send request
      * @return {Object}
      */
-    create: () => {
+    create: httpClient => {
+        if (_.isEmpty(httpClient)) {
+            throw new Error('Invalid httpClient parameter');
+        }
+
         /**
          * Create payload.
          * @param {Object} Email object
