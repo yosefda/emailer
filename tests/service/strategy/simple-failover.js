@@ -100,22 +100,9 @@ describe('Test simple failover strategy', () => {
                 ],
             });
 
-        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
-            status: 400,
-            message: 'Error in the payload. Please review response from provider',
-            upstream_response: {
-                status: 400,
-                data: {
-                    errors: [
-                        {
-                            message: 'The to array...',
-                            field: 'personalizations.0.to',
-                            help: 'http://sendgrid.com...',
-                        },
-                    ],
-                },
-            },
-        });
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
+            'Error in the payload. Please review response from provider'
+        );
     });
 
     it('goes to backup when primary returns non 4XX response', () => {
@@ -194,16 +181,9 @@ describe('Test simple failover strategy', () => {
                 message: "'to' parameter is missing",
             });
 
-        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
-            status: 400,
-            message: 'Error in the payload. Please review response from provider',
-            upstream_response: {
-                status: 400,
-                data: {
-                    message: "'to' parameter is missing",
-                },
-            },
-        });
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
+            'Error in the payload. Please review response from provider'
+        );
     });
 
     it('goes to backup but it retuns non 4XX', () => {
@@ -220,14 +200,9 @@ describe('Test simple failover strategy', () => {
             .post('/api')
             .reply(500);
 
-        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
-            status: 500,
-            message: 'Failed to send email. Please review response from provider',
-            upstream_response: {
-                status: 500,
-                data: 'Request failed with status code 500',
-            },
-        });
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
+            'Failed to send email. Please review response from provider'
+        );
     });
 
     it('goes to backup but it is also expriencing network error', () => {
@@ -244,13 +219,8 @@ describe('Test simple failover strategy', () => {
             .post('/api')
             .replyWithError('Network error');
 
-        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
-            status: 500,
-            message: 'Failed to send email. Please review response from provider',
-            upstream_response: {
-                status: 500,
-                data: 'Network error',
-            },
-        });
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
+            'Failed to send email. Please review response from provider'
+        );
     });
 });

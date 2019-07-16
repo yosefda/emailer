@@ -58,21 +58,21 @@ module.exports = {
         const handleUserError = err => {
             // Other errors.
             if (_.isEmpty(err.response)) {
-                return {};
+                return;
             }
 
             if (err.response.status >= 400 && err.response.status <= 499) {
-                return {
-                    status: err.response.status,
-                    message: 'Error in the payload. Please review response from provider',
-                    upstream_response: {
+                const error = new Error('Error in the payload. Please review response from provider');
+                (error.status = err.response.status),
+                    (error.upstream_response = {
                         status: err.response.status,
                         data: err.response.data,
-                    },
-                };
+                    });
+
+                return error;
             }
 
-            return {};
+            return;
         };
 
         const strategy = {
@@ -99,8 +99,8 @@ module.exports = {
                     })
                     .catch(err => {
                         // Handle require user attention error for primary.
-                        const userErrorResp = handleUserError(err);
-                        if (!_.isEmpty(userErrorResp)) {
+                        const userError = handleUserError(err);
+                        if (!_.isEmpty(userError)) {
                             logger.info(
                                 'Provider returns ' +
                                     err.response.status +
@@ -108,7 +108,7 @@ module.exports = {
                                     JSON.stringify(err.response.data)
                             );
 
-                            return userErrorResp;
+                            throw userError;
                         }
 
                         // For other errors we try backup provider.
@@ -126,8 +126,8 @@ module.exports = {
                             })
                             .catch(err => {
                                 // Handle require user attention error for backup.
-                                const userErrorResp = handleUserError(err);
-                                if (!_.isEmpty(userErrorResp)) {
+                                const userError = handleUserError(err);
+                                if (!_.isEmpty(userError)) {
                                     logger.info(
                                         'Provider returns ' +
                                             err.response.status +
@@ -135,11 +135,13 @@ module.exports = {
                                             JSON.stringify(err.response.data)
                                     );
 
-                                    return userErrorResp;
+                                    throw userError;
                                 }
 
                                 // For other error we simply stops and return the error to user
                                 logger.info('Failed to send using backup, reason: ' + err.message);
+                                const error = new Error('Failed to send email. Please review response from provider');
+
                                 let status = 500;
                                 if (!_.isEmpty(err.response) && err.response.status !== undefined) {
                                     status = err.response.status;
@@ -150,14 +152,13 @@ module.exports = {
                                     err.response.data;
                                 }
 
-                                return {
-                                    status: status,
-                                    message: 'Failed to send email. Please review response from provider',
-                                    upstream_response: {
+                                (error.status = status),
+                                    (error.upstream_response = {
                                         status: status,
                                         data: upstreamData,
-                                    },
-                                };
+                                    });
+
+                                throw error;
                             });
                     });
             },
