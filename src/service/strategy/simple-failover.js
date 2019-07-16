@@ -83,7 +83,7 @@ module.exports = {
              */
             send: email => {
                 if (_.isEmpty(email)) {
-                    throw new Error('Missing email');
+                    return Promise.reject(new Error('Missing email'));
                 }
 
                 logger.info('Send using primary provider ' + primary.getName());

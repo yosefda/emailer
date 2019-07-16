@@ -46,6 +46,10 @@ describe('Test simple failover strategy', () => {
         process.env.MAILGUN_SEND_ENDPOINT = mailgunEndpoint;
     });
 
+    afterEach(() => {
+        nock.cleanAll();
+    });
+
     it('throws error when primary and/or secondary provider(s) not provided', () => {
         expect(() => simpleFailover.create()).to.throw('Missing primary and/or backup provider(s)');
     });
@@ -55,7 +59,7 @@ describe('Test simple failover strategy', () => {
         const mailgun = mailgunProvider.create(http.create());
 
         const strategy = simpleFailover.create(sendgrid, mailgun);
-        expect(() => strategy.send()).to.throw('Missing email');
+        return expect(strategy.send()).to.be.rejectedWith('Missing email');
     });
 
     it('successfully send email using primary', () => {
