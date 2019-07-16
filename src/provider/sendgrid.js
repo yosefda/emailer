@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const axios = require('axios');
 
 const NAME = 'SendGrid';
 
