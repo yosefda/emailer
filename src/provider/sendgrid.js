@@ -72,6 +72,7 @@ module.exports = {
 
                 const payload = createPayload(email);
                 const options = {
+                    baseURL: process.env.SENDGRID_BASEURL,
                     headers: {
                         Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
                     },
