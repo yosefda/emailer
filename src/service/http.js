@@ -2,15 +2,13 @@
 
 const axios = require('axios');
 
-const DEFAULT_TIMEOUT = 3000;
-
 /**
  * Wrapper to create HTTP client.
  * @return {Object} HTTP client
  */
 module.exports.create = () => {
     const client = axios.create();
-    client.defaults.timeout = DEFAULT_TIMEOUT;
+    client.defaults.timeout = process.env.HTTP_CLIENT_DEFAULT_TIMEOUT;
 
     return client;
 };
