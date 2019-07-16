@@ -47,10 +47,17 @@ It implements **_"simple failover"_** sending strategy to send out the email. Ho
 -   Different strategy can be added - https://github.com/yosefda/emailer/tree/master/src/service/strategy
 -   To implement different strategy - https://github.com/yosefda/emailer/blob/master/src/service/sender.js#L10,L8
 
-### Limitations and further improvements
+### Limitations
 
 -   Only support plain-text email body
 -   No support for sending attachment
 -   Payload accepts `cc` and `bcc`, but not yet send to the provider. Need to dig more into documentations on how to send them in the request
 -   MailGun free access can only send to a list of "authorised recipients" only. So will need to add email address to the list first
 -   It is assume that the user of this API to manage the resending of failed emails. This version of API only acts as "proxy" to the email providers
+
+### Further improvements
+
+-   Use custom `Error` instead of generic one
+-   Provider to examine its own response and categorise them e.g. success, error because of invalid payload that requires user attention to fix, etc. This way the strategy can use/call a common interface (method) to get the response category and act based on that. Instead of strategy has to know details of response from provider.
+-   Better failover strategy that also works as a "circuit breaker" e.g. primary provider failed because of rate limit error. Then next requests goes straight to backup provider, until it backs to normal.
+-   Refactor code, especially to flatten promises in https://github.com/yosefda/emailer/blob/master/src/service/strategy/simple-failover.js#L90,L165
