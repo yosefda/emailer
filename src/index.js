@@ -4,6 +4,8 @@ const express = require('express');
 const api = express();
 const bodyParser = require('body-parser');
 const logger = require('./logger');
+const sender = require('./service/sender');
+const email = require('./email');
 
 const listenPort = parseInt(process.env.LISTEN_PORT) || 9999;
 
@@ -12,8 +14,43 @@ api.use(bodyParser.json());
 
 // This API only has 1 endpoint to send email.
 api.post('/v1/send', (req, res) => {
-    console.log('/v1/send');
-    res.send();
+    let payload;
+    let respBody;
+
+    try {
+        payload = email.create(req.body);
+    } catch (err) {
+        respBody = {
+            error: {
+                message: 'Failed to parse email payload',
+                details: {
+                    reason: err.message,
+                },
+            },
+        };
+
+        res.status(400);
+        res.json(respBody);
+        return;
+    }
+
+    sender
+        .send(payload)
+        .then(resp => {
+            console.log('resp:', resp);
+        })
+        .catch(err => {
+            respBody = {
+                error: {
+                    message: err.message,
+                    details: err.upstream_response,
+                },
+            };
+
+            res.status(err.status);
+            res.json(respBody);
+            return;
+        });
 });
 
 // Starts API.

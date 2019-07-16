@@ -200,9 +200,7 @@ describe('Test simple failover strategy', () => {
             .post('/api')
             .reply(500);
 
-        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
-            'Failed to send email. Please review response from provider'
-        );
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith('Failed to send email');
     });
 
     it('goes to backup but it is also expriencing network error', () => {
@@ -219,8 +217,6 @@ describe('Test simple failover strategy', () => {
             .post('/api')
             .replyWithError('Network error');
 
-        return expect(strategy.send(emailInfo)).to.be.rejectedWith(
-            'Failed to send email. Please review response from provider'
-        );
+        return expect(strategy.send(emailInfo)).to.be.rejectedWith('Failed to send email');
     });
 });

@@ -140,7 +140,7 @@ module.exports = {
 
                                 // For other error we simply stops and return the error to user
                                 logger.info('Failed to send using backup, reason: ' + err.message);
-                                const error = new Error('Failed to send email. Please review response from provider');
+                                const error = new Error('Failed to send email.');
 
                                 let status = 500;
                                 if (!_.isEmpty(err.response) && err.response.status !== undefined) {
