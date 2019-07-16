@@ -5,15 +5,9 @@ services:
         volumes:
             - .:/api
             - /api/node_modules
-        networks:
-            - dev_api_tier
         environment:
             - LISTEN_PORT=9999
         env_file: ./.env
         ports:
             - 9999:9999
         command: /bin/sh -c "cd /api && npm install && ./node_modules/.bin/nodemon src/index.js"
-
-networks:
-    dev_api_tier:
-        external: true
