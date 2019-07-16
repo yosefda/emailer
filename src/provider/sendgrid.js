@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const axios = require('axios');
 
 const NAME = 'SendGrid';
 
@@ -72,6 +73,7 @@ module.exports = {
 
                 const payload = createPayload(email);
                 const options = {
+                    baseURL: process.env.SENDGRID_BASEURL,
                     headers: {
                         Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
                     },

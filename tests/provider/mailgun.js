@@ -63,6 +63,9 @@ describe('Test mailgun service', () => {
         const req = mailgunProvider.send(emailInfo);
         expect(req.url).to.equal(process.env.MAILGUN_SEND_ENDPOINT);
         expect(req.payload).to.deep.equal(expectedPayload);
-        expect(req.options).to.deep.equal({ auth: { username: 'api', password: 'some-api-key' } });
+        expect(req.options).to.deep.equal({
+            auth: { username: 'api', password: 'some-api-key' },
+            baseURL: 'https://api.mailgun.net',
+        });
     });
 });

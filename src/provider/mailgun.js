@@ -46,6 +46,7 @@ module.exports = {
 
                 const payload = createPayload(email);
                 const options = {
+                    baseURL: process.env.MAILGUN_BASEURL,
                     auth: {
                         username: process.env.MAILGUN_API_USER,
                         password: process.env.MAILGUN_API_KEY,

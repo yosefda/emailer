@@ -17,6 +17,7 @@ api.post('/v1/send', (req, res) => {
     let payload;
     let respBody;
 
+    // Parse payload error.
     try {
         payload = email.create(req.body);
     } catch (err) {
@@ -37,9 +38,19 @@ api.post('/v1/send', (req, res) => {
     sender
         .send(payload)
         .then(resp => {
-            console.log('resp:', resp);
+            // Success sending to provider.
+            respBody = {
+                success: {
+                    message: resp.message,
+                    details: resp.upstream_response,
+                },
+            };
+            res.status(resp.status);
+            res.json(respBody);
+            return;
         })
         .catch(err => {
+            // Failed sending to provider.
             respBody = {
                 error: {
                     message: err.message,

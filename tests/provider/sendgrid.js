@@ -105,6 +105,9 @@ describe('Test SendGrid service', () => {
 
         expect(req.url).to.equal(process.env.SENDGRID_SEND_ENDPOINT);
         expect(req.payload).to.deep.equal(expectedPayload);
-        expect(req.options).to.deep.equal({ headers: { Authorization: 'Bearer some-api-key' } });
+        expect(req.options).to.deep.equal({
+            baseURL: process.env.SENDGRID_BASEURL,
+            headers: { Authorization: 'Bearer some-api-key' },
+        });
     });
 });
