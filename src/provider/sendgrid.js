@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const SEND_ENDPOINT = process.env.SENDGRID_SEND_ENDPOINT || 'https://api.sendgrid.com/v3/mail/send';
+const NAME = 'SendGrid';
 
 module.exports = {
     /**
@@ -77,7 +77,15 @@ module.exports = {
                     },
                 };
 
-                return httpClient.post(SEND_ENDPOINT, payload, options);
+                return httpClient.post(process.env.SENDGRID_SEND_ENDPOINT, payload, options);
+            },
+
+            /**
+             * Get provider name.
+             * @return {String}
+             */
+            getName: () => {
+                return NAME;
             },
         };
 

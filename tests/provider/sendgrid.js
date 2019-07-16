@@ -40,6 +40,11 @@ describe('Test SendGrid service', () => {
         expect(() => sendgridProvider.send({})).to.throw('Missing email');
     });
 
+    it('return provider name', () => {
+        const sendgridProvider = sendgrid.create(httpClient);
+        expect(sendgridProvider.getName()).to.equal('SendGrid');
+    });
+
     it('returns valid request to SendGrid', () => {
         const emailInfo = email.create({
             from: 'bob@example.com',

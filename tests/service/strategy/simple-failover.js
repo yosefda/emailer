@@ -1,42 +1,49 @@
 'use strict';
 
+const email = require('../../../src/email');
+const chai = require('chai');
+var chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
 const { expect } = require('chai');
+const http = require('../../../src/service/http');
+const mailgunProvider = require('../../../src/provider/mailgun');
+const nock = require('nock');
+const sendgridProvider = require('../../../src/provider/sendgrid');
 const simpleFailover = require('../../../src/service/strategy/simple-failover');
-const sendgrid = require('../../../src/provider/sendgrid');
-const mailgun = require('../../../src/provider/mailgun');
 
 describe('Test simple failover strategy', () => {
-    let primary;
-    let backup;
-    let sendgridApiKey;
-    let mailgunApiKey;
+    let sendgridKey;
+    let sendgridEndpoint;
+    let mailgunKey;
+    let mailgunEndpoint;
 
-    const getHttpClient = {
-        url: '',
-        payload: '',
-        options: {},
-        post: (url, payload, options) => {
-            this.url = url;
-            this.payload = payload;
-            this.options = options;
-
-            return this;
-        },
-    };
+    const emailInfo = email.create({
+        from: 'bob@example.com',
+        to: 'sam@example.com, jane@example.com',
+        cc: 'joe@example.com',
+        bcc: 'smith@example.com',
+        subject: 'Test email',
+        body: 'Hi there guys!',
+    });
 
     before(() => {
-        sendgridApiKey = process.env.SENDGRID_API_KEY;
-        mailgunApiKey = process.env.MAILGUN_API_KEY;
-        process.env.SENDGRID_API_KEY = 'some-api-key';
-        process.env.MAILGUN_API_KEY = 'some-api-key';
+        sendgridKey = process.env.SENDGRID_API_KEY;
+        process.env.SENDGRID_API_KEY = 'sendgrid-key';
+        sendgridEndpoint = process.env.SENDGRID_SEND_ENDPOINT;
+        process.env.SENDGRID_SEND_ENDPOINT = 'https://sendgrid/api';
 
-        primary = sendgrid.create(getHttpClient);
-        backup = mailgun.create(getHttpClient);
+        mailgunKey = process.env.MAILGUN_API_KEY;
+        process.env.MAILGUN_API_KEY = 'mailgun-key';
+        mailgunEndpoint = process.env.MAILGUN_SEND_ENDPOINT;
+        process.env.MAILGUN_SEND_ENDPOINT = 'https://mailgun/api';
     });
 
     after(() => {
-        process.env.SENDGRID_API_KEY = sendgridApiKey;
-        process.env.MAILGUN_API_KEY = mailgunApiKey;
+        process.env.SENDGRID_API_KEY = sendgridKey;
+        process.env.SENDGRID_SEND_ENDPOINT = sendgridEndpoint;
+
+        process.env.MAILGUN_API_KEY = mailgunKey;
+        process.env.MAILGUN_SEND_ENDPOINT = mailgunEndpoint;
     });
 
     it('throws error when primary and/or secondary provider(s) not provided', () => {
@@ -44,7 +51,202 @@ describe('Test simple failover strategy', () => {
     });
 
     it('throws error when send() missing email', () => {
-        const strategy = simpleFailover.create(primary, backup);
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
         expect(() => strategy.send()).to.throw('Missing email');
+    });
+
+    it('successfully send email using primary', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .reply(200);
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 200,
+            message: 'Email sent sucessfully',
+            upstream_response: {
+                status: 200,
+                data: '',
+            },
+        });
+    });
+
+    it('returns error requires user attention from primary', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .reply(400, {
+                errors: [
+                    {
+                        message: 'The to array...',
+                        field: 'personalizations.0.to',
+                        help: 'http://sendgrid.com...',
+                    },
+                ],
+            });
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 400,
+            message: 'Error in the payload. Please review response from provider',
+            upstream_response: {
+                status: 400,
+                data: {
+                    errors: [
+                        {
+                            message: 'The to array...',
+                            field: 'personalizations.0.to',
+                            help: 'http://sendgrid.com...',
+                        },
+                    ],
+                },
+            },
+        });
+    });
+
+    it('goes to backup when primary returns non 4XX response', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .reply(500);
+
+        nock('https://mailgun')
+            .post('/api')
+            .reply(200, {
+                id: '<20190...',
+                message: 'Queued...',
+            });
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 200,
+            message: 'Email sent sucessfully',
+            upstream_response: {
+                status: 200,
+                data: {
+                    id: '<20190...',
+                    message: 'Queued...',
+                },
+            },
+        });
+    });
+
+    it('goes to backup when primary experiencing network error', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .replyWithError('Network error');
+
+        nock('https://mailgun')
+            .post('/api')
+            .reply(200, {
+                id: '<20190...',
+                message: 'Queued...',
+            });
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 200,
+            message: 'Email sent sucessfully',
+            upstream_response: {
+                status: 200,
+                data: {
+                    id: '<20190...',
+                    message: 'Queued...',
+                },
+            },
+        });
+    });
+
+    it('goes to backup but it retuns require user attention error', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .replyWithError('Network error');
+
+        nock('https://mailgun')
+            .post('/api')
+            .reply(400, {
+                message: "'to' parameter is missing",
+            });
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 400,
+            message: 'Error in the payload. Please review response from provider',
+            upstream_response: {
+                status: 400,
+                data: {
+                    message: "'to' parameter is missing",
+                },
+            },
+        });
+    });
+
+    it('goes to backup but it retuns non 4XX', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .replyWithError('Network error');
+
+        nock('https://mailgun')
+            .post('/api')
+            .reply(500);
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 500,
+            message: 'Failed to send email. Please review response from provider',
+            upstream_response: {
+                status: 500,
+                data: 'Request failed with status code 500',
+            },
+        });
+    });
+
+    it('goes to backup but it is also expriencing network error', () => {
+        const sendgrid = sendgridProvider.create(http.create());
+        const mailgun = mailgunProvider.create(http.create());
+
+        const strategy = simpleFailover.create(sendgrid, mailgun);
+
+        nock('https://sendgrid')
+            .post('/api')
+            .replyWithError('Network error');
+
+        nock('https://mailgun')
+            .post('/api')
+            .replyWithError('Network error');
+
+        return expect(strategy.send(emailInfo)).to.eventually.deep.equal({
+            status: 500,
+            message: 'Failed to send email. Please review response from provider',
+            upstream_response: {
+                status: 500,
+                data: 'Network error',
+            },
+        });
     });
 });

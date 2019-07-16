@@ -40,6 +40,11 @@ describe('Test mailgun service', () => {
         expect(() => mailgunProvider.send({})).to.throw('Missing email');
     });
 
+    it('return provider name', () => {
+        const mailgunProvider = mailgun.create(httpClient);
+        expect(mailgunProvider.getName()).to.equal('MailGun');
+    });
+
     it('returns valid request to MailGun', () => {
         const emailInfo = email.create({
             from: 'bob@example.com',
